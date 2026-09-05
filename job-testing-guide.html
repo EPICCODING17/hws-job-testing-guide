@@ -1,0 +1,592 @@
+<title>คู่มือทดสอบงานขนส่ง</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface-2:#edf1f6; --surface-3:#e3e8f0;
+  --border:#dde3ec; --border-strong:#c8d0dd;
+  --text:#182238; --text-2:#4c5872; --text-3:#7c879c;
+  --accent:#3a63e0; --accent-ink:#ffffff; --accent-soft:rgba(58,99,224,.10); --accent-soft-2:rgba(58,99,224,.18);
+  --ok:#178a4c; --ok-soft:rgba(23,138,76,.12);
+  --warn:#a35b00; --warn-soft:rgba(217,142,10,.15);
+  --bad:#c22a2a; --bad-soft:rgba(194,42,42,.12);
+  --mono-bg:#eef1f6; --mono-text:#334066;
+  --shadow: 0 1px 2px rgba(20,30,60,.04), 0 8px 24px -12px rgba(20,30,60,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0d13; --surface:#12151d; --surface-2:#171b25; --surface-3:#1e2330;
+    --border:#262c3a; --border-strong:#333c4e;
+    --text:#e7ebf3; --text-2:#a3adc2; --text-3:#727d94;
+    --accent:#6f95ff; --accent-ink:#0b0d13; --accent-soft:rgba(111,149,255,.14); --accent-soft-2:rgba(111,149,255,.24);
+    --ok:#4ad991; --ok-soft:rgba(74,217,145,.14);
+    --warn:#f2b545; --warn-soft:rgba(242,181,69,.14);
+    --bad:#ff8484; --bad-soft:rgba(255,132,132,.14);
+    --mono-bg:#1a1f2b; --mono-text:#b7c2e0;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0d13; --surface:#12151d; --surface-2:#171b25; --surface-3:#1e2330;
+  --border:#262c3a; --border-strong:#333c4e;
+  --text:#e7ebf3; --text-2:#a3adc2; --text-3:#727d94;
+  --accent:#6f95ff; --accent-ink:#0b0d13; --accent-soft:rgba(111,149,255,.14); --accent-soft-2:rgba(111,149,255,.24);
+  --ok:#4ad991; --ok-soft:rgba(74,217,145,.14);
+  --warn:#f2b545; --warn-soft:rgba(242,181,69,.14);
+  --bad:#ff8484; --bad-soft:rgba(255,132,132,.14);
+  --mono-bg:#1a1f2b; --mono-text:#b7c2e0;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Prompt',system-ui,sans-serif;
+  font-size:14.5px; line-height:1.65;
+}
+::selection{background:var(--accent-soft-2)}
+h1,h2,h3,h4{font-weight:600; text-wrap:balance; letter-spacing:-.01em}
+code, .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+a{color:var(--accent)}
+
+.shell{
+  max-width:1180px; margin:0 auto; padding:28px 20px 80px;
+  display:grid; grid-template-columns:224px minmax(0,1fr); gap:36px;
+}
+@media (max-width:900px){ .shell{grid-template-columns:1fr; gap:20px; padding:16px 14px 56px} }
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:20; grid-column:1/-1;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:12px 20px; margin:0 -20px 8px; background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+}
+@media (max-width:900px){ .topbar{margin:0 -14px 4px; padding:10px 14px} }
+.brand{display:flex; align-items:center; gap:10px; min-width:0}
+.brand .mark{
+  width:30px; height:30px; border-radius:9px; flex:none;
+  background:linear-gradient(155deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #7a3ff5));
+  display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px;
+}
+.brand-text{min-width:0}
+.brand-text .t1{font-weight:600; font-size:13.5px; line-height:1.2; white-space:nowrap}
+.brand-text .t2{font-size:11px; color:var(--text-3); white-space:nowrap}
+.progress-pill{
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-2);
+  background:var(--surface); border:1px solid var(--border); border-radius:100px; padding:6px 12px 6px 6px;
+  flex:none;
+}
+.progress-ring{width:22px; height:22px; flex:none}
+.progress-ring circle{fill:none; stroke-width:3}
+.progress-ring .track{stroke:var(--border-strong)}
+.progress-ring .bar{stroke:var(--accent); stroke-linecap:round; transform:rotate(-90deg); transform-origin:50% 50%; transition:stroke-dashoffset .3s ease}
+#progress-num{font-weight:600; color:var(--text)}
+
+/* ---------- side nav ---------- */
+.side{position:sticky; top:64px; align-self:start; max-height:calc(100vh - 84px); overflow:auto}
+.side-group{margin-bottom:18px}
+.side-group h4{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-3); margin:0 0 8px; padding:0 10px}
+.side a{
+  display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px;
+  color:var(--text-2); text-decoration:none; font-size:12.8px; line-height:1.3;
+}
+.side a:hover{background:var(--surface-2); color:var(--text)}
+.side a .n{
+  width:17px; height:17px; flex:none; border-radius:5px; background:var(--surface-3); color:var(--text-3);
+  font-size:9.5px; font-weight:600; display:flex; align-items:center; justify-content:center;
+}
+@media (max-width:900px){
+  .side{position:static; max-height:none; overflow:visible; display:flex; gap:6px; flex-wrap:wrap}
+  .side-group{margin:0; display:contents}
+  .side-group h4{display:none}
+  .side a{padding:6px 11px; background:var(--surface); border:1px solid var(--border)}
+}
+
+/* ---------- main ---------- */
+main{min-width:0}
+.hero{margin-bottom:8px}
+.eyebrow{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent); font-weight:600; margin:0 0 8px}
+h1.title{font-size:26px; margin:0 0 10px}
+.lede{color:var(--text-2); font-size:14.5px; max-width:62ch; margin:0}
+.hero-meta{display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; padding-top:16px; border-top:1px solid var(--border)}
+.hero-meta .item{font-size:12px; color:var(--text-3)}
+.hero-meta .item b{display:block; color:var(--text); font-size:13.5px; font-weight:600; margin-top:2px}
+
+section{margin-top:52px; scroll-margin-top:74px}
+.sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:6px}
+.sec-num{font-family:'JetBrains Mono'; font-size:12px; color:var(--accent); font-weight:600}
+h2{font-size:19px; margin:0}
+.sec-desc{color:var(--text-2); font-size:13.3px; margin:6px 0 20px; max-width:70ch}
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:18px 20px; box-shadow:var(--shadow);
+}
+.card + .card{margin-top:12px}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+@media (max-width:640px){ .grid-2{grid-template-columns:1fr} }
+
+/* badges */
+.badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:100px; line-height:1.5; white-space:nowrap}
+.badge.req{background:var(--bad-soft); color:var(--bad)}
+.badge.opt{background:var(--surface-3); color:var(--text-3)}
+.badge.ok{background:var(--ok-soft); color:var(--ok)}
+.badge.warn{background:var(--warn-soft); color:var(--warn)}
+.route{
+  display:inline-flex; align-items:center; gap:8px; font-family:'JetBrains Mono'; font-size:11.5px;
+  background:var(--mono-bg); color:var(--mono-text); border-radius:7px; padding:3px 9px 4px; white-space:nowrap;
+}
+.route .verb{font-weight:700; opacity:.7}
+code.k{font-family:'JetBrains Mono'; background:var(--mono-bg); color:var(--mono-text); padding:1.5px 6px; border-radius:5px; font-size:12px}
+
+/* tables */
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3); padding:0 10px 8px; font-weight:600}
+td{padding:9px 10px; border-top:1px solid var(--border); vertical-align:top}
+tr:first-child td{border-top:none}
+.tname{font-weight:500; white-space:nowrap}
+.overflow{overflow-x:auto; margin:0 -4px}
+
+/* callouts */
+.callout{border-radius:12px; padding:14px 16px; font-size:13px; display:flex; gap:12px; align-items:flex-start}
+.callout .icon{flex:none; width:20px; height:20px; margin-top:1px}
+.callout.warn{background:var(--warn-soft); color:var(--text)}
+.callout.warn .icon{color:var(--warn)}
+.callout.info{background:var(--accent-soft); color:var(--text)}
+.callout.info .icon{color:var(--accent)}
+.callout p{margin:0}
+.callout ul{margin:6px 0 0; padding-left:18px}
+.callout + .callout{margin-top:10px}
+
+/* checklist */
+.check-row{display:flex; align-items:flex-start; gap:10px; padding:9px 4px; border-top:1px solid var(--border)}
+.check-row:first-child{border-top:none}
+.check-row input{margin-top:3px; width:15px; height:15px; accent-color:var(--accent); flex:none; cursor:pointer}
+.check-row label{font-size:13px; cursor:pointer; flex:1}
+.check-row.done label{color:var(--text-3); text-decoration:line-through}
+
+/* step chain */
+.chain{display:flex; flex-wrap:wrap; gap:0; align-items:center; margin:14px 0 4px}
+.chain .step{
+  display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:100px; font-size:12px; font-weight:500;
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-2);
+}
+.chain .step.n{font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-3)}
+.chain .arrow{color:var(--text-3); margin:0 6px; font-size:13px}
+.status-chain{display:flex; flex-wrap:wrap; align-items:center; gap:0; margin-top:10px}
+.status-chain .st{padding:4px 11px; border-radius:100px; font-size:11.5px; font-weight:600; background:var(--surface-2); color:var(--text-2)}
+.status-chain .st.a{background:var(--accent-soft); color:var(--accent)}
+.status-chain .arrow{color:var(--text-3); margin:0 5px; font-size:12px}
+
+.subflow{padding:20px 22px}
+.subflow-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.subflow-head h3{font-size:15.5px; margin:0}
+.subflow-sub{color:var(--text-3); font-size:12px; margin-top:2px}
+.field-list{display:flex; flex-direction:column; gap:0; margin-top:12px}
+.field-row{display:flex; gap:10px; align-items:baseline; padding:6px 0; border-top:1px dashed var(--border); font-size:12.8px}
+.field-row:first-child{border-top:none}
+.field-row .fname{font-weight:500; min-width:150px; flex:none}
+.field-row .fdesc{color:var(--text-2)}
+.note{font-size:12.3px; color:var(--text-2); background:var(--surface-2); border-radius:9px; padding:9px 12px; margin-top:12px}
+.note b{color:var(--text)}
+
+.track{padding:18px 20px}
+.track h3{font-size:14.5px; margin:0 0 3px}
+.track .count{font-size:11.5px; color:var(--text-3); font-weight:500}
+.track ol{list-style:none; margin:14px 0 0; padding:0; counter-reset:st}
+.track li{
+  counter-increment:st; display:flex; align-items:center; gap:10px; padding:7px 0; font-size:13px;
+  border-top:1px dashed var(--border);
+}
+.track li:first-child{border-top:none}
+.track li::before{
+  content:counter(st, decimal-leading-zero); font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-3);
+  background:var(--surface-2); border-radius:6px; width:24px; height:20px; display:flex; align-items:center; justify-content:center; flex:none;
+}
+.track.empty{display:flex; align-items:center; justify-content:center; text-align:center; color:var(--text-3); font-size:12.8px; padding:36px 20px}
+
+footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); color:var(--text-3); font-size:11.5px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px}
+</style>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">HWS</div>
+      <div class="brand-text">
+        <div class="t1">คู่มือทดสอบงานขนส่ง</div>
+        <div class="t2">โมดูล Job · Highways Shipping</div>
+      </div>
+    </div>
+    <div class="progress-pill">
+      <svg class="progress-ring" viewBox="0 0 22 22">
+        <circle class="track" cx="11" cy="11" r="9"></circle>
+        <circle class="bar" id="ring-bar" cx="11" cy="11" r="9" stroke-dasharray="56.5" stroke-dashoffset="56.5"></circle>
+      </svg>
+      <span><span id="progress-num">0</span>/<span id="progress-total">0</span> เช็คแล้ว</span>
+    </div>
+  </div>
+
+  <nav class="side">
+    <div class="side-group">
+      <h4>เริ่มต้น</h4>
+      <a href="#prep"><span class="n">0</span> เตรียมข้อมูลหลัก</a>
+      <a href="#create"><span class="n">1</span> สร้าง Job</a>
+      <a href="#pipeline"><span class="n">2</span> สายงานขั้นตอน</a>
+    </div>
+    <div class="side-group">
+      <h4>งานย่อยในหน้า Job</h4>
+      <a href="#sf-shipping"><span class="n">3.1</span> สั่งงาน Shipping</a>
+      <a href="#sf-messenger"><span class="n">3.2</span> สั่งงาน Messenger</a>
+      <a href="#sf-truck"><span class="n">3.3</span> จองรถ</a>
+      <a href="#sf-delivery"><span class="n">3.4</span> ใบส่งของ</a>
+      <a href="#sf-shipment"><span class="n">3.5</span> Shipment / ตู้</a>
+      <a href="#sf-customs"><span class="n">3.6</span> ใบขนสินค้า</a>
+      <a href="#sf-docs"><span class="n">3.7</span> เอกสารแนบ</a>
+      <a href="#sf-advance"><span class="n">3.8</span> เบิกเงิน</a>
+      <a href="#sf-closing"><span class="n">3.9</span> ปิดต้นทุน</a>
+    </div>
+    <div class="side-group">
+      <h4>ก่อนสรุปผล</h4>
+      <a href="#gotchas"><span class="n">4</span> ข้อควรระวัง</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <p class="eyebrow">Internal QA Playbook — เฉพาะโมดูล Job</p>
+      <h1 class="title">ทดสอบ flow งานขนส่งตั้งแต่ศูนย์ ไปทีละก้าว</h1>
+      <p class="lede">ลำดับที่แนะนำให้ทดสอบ ตั้งแต่เตรียมข้อมูลหลัก ไปจนถึงปิดงาน อ้างอิงจากโค้ดจริงใน <code class="k">app/Http/Controllers</code> และ <code class="k">routes/web.php</code> ของ hws-laravel — ไม่ใช่การเดา ติ๊กช่องด้านขวาของแต่ละหัวข้อได้ ระบบจะจำไว้ให้ในเบราว์เซอร์นี้</p>
+      <div class="hero-meta">
+        <div class="item">เข้าระบบด้วย <b>superadmin / password</b></div>
+        <div class="item">ทดสอบผ่านสิทธิ์ <b>super_admin (ข้ามทุกการเช็คสิทธิ์)</b></div>
+        <div class="item">ครอบคลุม <b>9 งานย่อย + สายงานขั้นตอน</b></div>
+      </div>
+    </div>
+
+    <!-- ============ 0. PREP ============ -->
+    <section id="prep">
+      <div class="sec-head"><span class="sec-num">00</span><h2>เตรียมข้อมูลหลักก่อนเริ่ม</h2></div>
+      <p class="sec-desc">ก่อนสร้าง Job จริง ให้เช็คว่าข้อมูลหลัก (master data) ที่ Job ต้องใช้มีอยู่แล้วหรือยัง — บางตัวมีข้อมูลเริ่มต้นให้แล้วอัตโนมัติ บางตัวต้องสร้างเองก่อน</p>
+
+      <div class="card">
+        <div class="subflow-head"><h3>มีข้อมูลเริ่มต้นให้แล้ว ไม่ต้องทำอะไร</h3><span class="badge ok">พร้อมใช้</span></div>
+        <p class="note">ทิศทางงาน · รูปแบบขนส่ง · ประเภทตู้/สินค้า (LCL/FCL) · ช่วงเวลา (เช้า/บ่าย) · สถานะใบขนสินค้า · วิธีรับ D/O · สิทธิพิเศษศุลกากร · แหล่งที่มาเอกสาร · ประเภท Supplier · Incoterm (11 รายการ) · กรณีบริการ · ประเภทตู้คอนเทนเนอร์ (8 รายการ) · กลุ่มค่าใช้จ่าย — ดูแลแก้ไขได้ที่เมนู <b>Master Data</b> (ยกเว้น Incoterm/กรณีบริการ/ประเภทตู้คอนเทนเนอร์ที่ยังไม่มีหน้าแก้ไข)</p>
+      </div>
+
+      <div class="card">
+        <div class="subflow-head"><h3>ต้องสร้างอย่างน้อย 1 รายการก่อน</h3><span class="badge req">ต้องทำ</span></div>
+        <div class="overflow">
+        <table>
+          <tr><th>ข้อมูล</th><th>ใช้ที่ไหน</th><th>สร้างที่</th></tr>
+          <tr><td class="tname">ลูกค้า (Customer)</td><td>ทุก Job ต้องผูกกับลูกค้า</td><td><span class="route">/customers/create</span></td></tr>
+          <tr><td class="tname">ผู้ใช้งาน (User)</td><td>เจ้าของงาน, ผู้รับงาน Shipping/Messenger</td><td><span class="route">/users/create</span></td></tr>
+          <tr><td class="tname">แผนก (Department)</td><td>ไม่บังคับ — ข้อมูลประกอบผู้ใช้งาน</td><td><span class="route">/departments/create</span></td></tr>
+          <tr><td class="tname">Role</td><td>ให้สิทธิ์ <code class="k">shipping</code>/<code class="k">messenger</code> กับ User</td><td><span class="route">/roles</span></td></tr>
+        </table>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <div>
+          <p><b>ยังไม่มีหน้าแอดมินให้กรอกเลย</b> — Supplier (สายเรือ/Forwarder/บริษัทรถ), ท่าเรือ/สนามบิน, Terminal, ประเภทรถ, เรือ (Vessel)</p>
+          <p style="margin-top:6px">ต้องให้นักพัฒนารันคำสั่ง <code class="k">php artisan hws:import-legacy</code> ให้ก่อน (ดึงจากไฟล์ CSV เดิม — ครอบคลุม Supplier/ท่าเรือ/ประเภทรถ แต่ไม่ครอบคลุม Terminal และเรือ ต้องสร้างผ่าน tinker เพิ่ม) ถ้าข้ามขั้นนี้ dropdown ในหน้า "สั่งงาน Shipping", "จองรถ", "Shipment/ตู้" จะว่างเปล่า ทดสอบไม่ครบ</p>
+        </div>
+      </div>
+      <div class="callout info">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+        <p>ผู้ใช้งานที่จะไปโผล่ในช่อง "Shipping ผู้รับงาน" ต้องมี Role <code class="k">shipping</code> และช่อง "Messenger ผู้วิ่งงาน" ต้องมี Role <code class="k">messenger</code> — กำหนดได้ตอนสร้าง/แก้ไข User</p>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="field-list" id="list-prep"></div>
+      </div>
+    </section>
+
+    <!-- ============ 1. CREATE JOB ============ -->
+    <section id="create">
+      <div class="sec-head"><span class="sec-num">01</span><h2>สร้าง Job ใหม่</h2></div>
+      <p class="sec-desc">จุดเริ่มต้นของทุกอย่าง — ทิศทางงานที่เลือกตรงนี้จะกำหนดว่า Job จะได้สายขั้นตอน (step pipeline) แบบไหน</p>
+
+      <div class="card">
+        <div class="grid-2" style="margin-bottom:14px">
+          <div><span class="route"><span class="verb">GET</span> /jobs/create</span></div>
+          <div><span class="route"><span class="verb">POST</span> /jobs</span></div>
+        </div>
+        <div class="overflow">
+        <table>
+          <tr><th>ฟิลด์</th><th></th><th>หมายเหตุ</th></tr>
+          <tr><td class="tname">ลูกค้า</td><td><span class="badge req">บังคับ</span></td><td>—</td></tr>
+          <tr><td class="tname">ทิศทางงาน</td><td><span class="badge req">บังคับ</span></td><td>กำหนดสายขั้นตอนทั้งหมด — ดูส่วนที่ 2</td></tr>
+          <tr><td class="tname">รูปแบบขนส่ง</td><td><span class="badge req">บังคับ</span></td><td>ทางเรือ/ทางอากาศ/ทางบก</td></tr>
+          <tr><td class="tname">ประเภทตู้/สินค้า</td><td><span class="badge opt">ไม่บังคับ</span></td><td>LCL/FCL</td></tr>
+          <tr><td class="tname">Incoterm / กรณีบริการ</td><td><span class="badge opt">ไม่บังคับ</span></td><td>—</td></tr>
+          <tr><td class="tname">เจ้าของงาน</td><td><span class="badge opt">ไม่บังคับ</span></td><td>เว้นว่าง = ผู้สร้างเอง</td></tr>
+          <tr><td class="tname">เลข Invoice ลูกค้า / จำนวนหีบห่อ / น้ำหนัก / รายละเอียดสินค้า / หมายเหตุภายใน</td><td><span class="badge opt">ไม่บังคับ</span></td><td>—</td></tr>
+        </table>
+        </div>
+        <p class="note">กดบันทึกแล้วระบบจะออกเลข Job อัตโนมัติ (เช่น <code class="k">HWS0001</code>) และสร้างรายการขั้นตอนให้ทันทีตามทิศทางงานที่เลือก</p>
+      </div>
+    </section>
+
+    <!-- ============ 2. PIPELINE ============ -->
+    <section id="pipeline">
+      <div class="sec-head"><span class="sec-num">02</span><h2>สายงานขั้นตอน (Step Pipeline)</h2></div>
+      <p class="sec-desc">ทดสอบ 1 Job ต่อ 1 ทิศทาง จะเห็นพฤติกรรมต่างกันชัดเจนที่สุด</p>
+
+      <div class="grid-2">
+        <div class="card track">
+          <h3>นำเข้า (Import)</h3>
+          <span class="count">12 ขั้นตอน</span>
+          <ol>
+            <li>รับ B/L</li><li>ENTER</li><li>ทำใบขน</li><li>ส่งใบขนตรวจสอบ</li>
+            <li>ส่งแบบแจ้งค่าใช้จ่าย</li><li>เบิกภาษี</li><li>เบิกค่า D/O</li><li>เบิกมัดจำตู้</li>
+            <li>รับ OBL/BOI</li><li>สั่งงานแลก D/O</li><li>ส่งงานรับเช็ค</li><li>ตรวจปล่อย</li>
+          </ol>
+        </div>
+        <div class="card track">
+          <h3>ส่งออก (Export)</h3>
+          <span class="count">7 ขั้นตอน</span>
+          <ol>
+            <li>Booking</li><li>จองรถ</li><li>ยิงใบขนขาออก</li><li>เดินพิธีการ</li>
+            <li>เรือออก</li><li>จ่ายเงินรับ BL</li><li>สั่งแมสรับ BL+ใบเสร็จ</li>
+          </ol>
+        </div>
+      </div>
+      <div class="card track empty" style="margin-top:12px">
+        <div><b style="color:var(--text)">ในประเทศ (Domestic) — ไม่มีสายขั้นตอนเลย</b><br>ตั้งใจให้เป็นแบบนี้ ไม่ใช่บั๊ก — หน้า Job จะไม่มีการ์ด "แผนงานและความคืบหน้า" ขึ้นเลยเมื่อทดสอบ</div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h3 style="font-size:14.5px; margin:0 0 4px">วิธีเดินขั้นตอน</h3>
+        <p class="note">ที่หน้า Job จะมีปุ่ม <b>"ทำเครื่องหมายเสร็จ →"</b> กับ <b>"ข้ามขั้นตอนนี้"</b> — ปุ่มข้ามจะกดไม่ได้จนกว่าจะพิมพ์หมายเหตุก่อน <code class="k">POST /jobs/{job}/steps/advance</code></p>
+        <p class="note">การตรวจปล่อยของงาน Shipping (ดูข้อ 3.1) จะ <b>เดินขั้นตอนสุดท้ายให้อัตโนมัติ</b> ไม่ต้องกดเองที่การ์ดขั้นตอน — เป็นจุดทดสอบที่ควรลองสังเกตดูว่าอัปเดตจริงไหม</p>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="field-list" id="list-pipeline"></div>
+      </div>
+    </section>
+
+    <!-- ============ 3. SUBFLOWS ============ -->
+    <section>
+      <div class="sec-head"><span class="sec-num">03</span><h2>งานย่อยที่ทำได้จากหน้า Job</h2></div>
+      <p class="sec-desc">ทุกปุ่มด้านล่างอยู่บนหน้า <span class="route">/jobs/{job}</span> — เรียงตามลำดับที่มักใช้จริงในงานนำเข้า</p>
+
+      <div class="card subflow" id="sf-shipping">
+        <div class="subflow-head">
+          <div><h3>3.1 · สั่งงาน Shipping</h3><div class="subflow-sub">ShippingAssignmentController</div></div>
+          <span class="badge warn">ต้องแนบรูป</span>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/assignments</span>
+          <span class="route"><span class="verb">POST</span> …/assignments/{a}/acknowledge</span>
+          <span class="route"><span class="verb">GET</span> …/assignments/{a}/edit</span>
+          <span class="route"><span class="verb">POST</span> …/assignments/{a}/release</span>
+        </div>
+        <div class="field-list">
+          <div class="field-row"><span class="fname">ท่าปล่อยสินค้า</span><span class="fdesc">บังคับ — เลือกท่าในระบบ หรือติ๊ก "ท่านอก" แล้วพิมพ์ชื่อเอง อย่างใดอย่างหนึ่ง</span></div>
+          <div class="field-row"><span class="fname">Shipping ผู้รับงาน</span><span class="fdesc">บังคับ — ต้องเป็น User ที่มี Role shipping</span></div>
+          <div class="field-row"><span class="fname">ที่เหลือ (ประเภทงาน, D/O, รถ, เอเยนต์...)</span><span class="fdesc">ไม่บังคับทั้งหมด</span></div>
+        </div>
+        <div class="status-chain">
+          <span class="st a">assigned</span><span class="arrow">→</span>
+          <span class="st">acknowledged <span style="opacity:.6">(กด "รับทราบงาน")</span></span><span class="arrow">→</span>
+          <span class="st">released <span style="opacity:.6">(ต้องแนบรูป ≥ 1 รูป)</span></span>
+        </div>
+      </div>
+
+      <div class="card subflow" id="sf-messenger">
+        <div class="subflow-head">
+          <div><h3>3.2 · สั่งงาน Messenger</h3><div class="subflow-sub">MessengerOrderController</div></div>
+          <span class="badge warn">ต้องแนบรูปถ้าสำเร็จ</span>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/messenger-orders</span>
+          <span class="route"><span class="verb">POST</span> …/messenger-orders/{m}/complete</span>
+        </div>
+        <div class="field-list">
+          <div class="field-row"><span class="fname">วันที่วิ่งงาน / ช่วงเวลา</span><span class="fdesc">บังคับทั้งคู่</span></div>
+          <div class="field-row"><span class="fname">Messenger ผู้วิ่งงาน</span><span class="fdesc">บังคับ — ต้องเป็น User ที่มี Role messenger</span></div>
+          <div class="field-row"><span class="fname">รายการ (อย่างน้อย 1)</span><span class="fdesc">แต่ละแถวบังคับ ประเภทงาน + ยอดเงิน</span></div>
+        </div>
+        <div class="status-chain">
+          <span class="st a">assigned</span><span class="arrow">→</span>
+          <span class="st">success <span style="opacity:.6">(แนบรูป)</span> / failed / problem <span style="opacity:.6">(ต้องมีหมายเหตุ)</span></span>
+        </div>
+      </div>
+
+      <div class="card subflow" id="sf-truck">
+        <div class="subflow-head"><div><h3>3.3 · จองรถ</h3><div class="subflow-sub">TruckBookingController</div></div></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/truck-bookings</span>
+          <span class="route"><span class="verb">POST</span> …/truck-bookings/{t}/complete</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">วันที่จอง</span><span class="fdesc">บังคับ — ทุกฟิลด์อื่น (บริษัทรถ, ท่ารับ-ส่ง, คนขับ, ทะเบียน, มัดจำ) ไม่บังคับ</span></div></div>
+        <div class="status-chain"><span class="st a">booked</span><span class="arrow">→</span><span class="st">delivered / problem <span style="opacity:.6">(ต้องมีหมายเหตุ)</span></span></div>
+      </div>
+
+      <div class="card subflow" id="sf-delivery">
+        <div class="subflow-head"><div><h3>3.4 · ใบส่งของ</h3><div class="subflow-sub">DeliveryNoteController</div></div><span class="badge ok">ไม่มีสถานะ</span></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/delivery-notes</span>
+          <span class="route"><span class="verb">PUT</span> …/delivery-notes/{d}</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">วันที่ส่งของ</span><span class="fdesc">บังคับเท่านั้น — ไม่มีขั้นตอนสถานะให้ทดสอบต่อ ตั้งใจให้จบที่สร้าง/แก้ไข</span></div></div>
+      </div>
+
+      <div class="card subflow" id="sf-shipment">
+        <div class="subflow-head"><div><h3>3.5 · Shipment / ตู้</h3><div class="subflow-sub">JobShipmentController</div></div><span class="badge ok">ทุกฟิลด์ไม่บังคับ</span></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">GET</span> /jobs/{job}/shipment/edit</span>
+          <span class="route"><span class="verb">PUT</span> /jobs/{job}/shipment</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">เรือ, Voyage, MBL/HBL/AWB, สายเรือ, ETD/ETA, POL/POD, สิทธิพิเศษ, ตู้คอนเทนเนอร์...</span><span class="fdesc">บันทึกซ้ำได้เรื่อยๆ (upsert) ลองแก้แล้วเซฟดูว่าไม่มี error</span></div></div>
+      </div>
+
+      <div class="card subflow" id="sf-customs">
+        <div class="subflow-head"><div><h3>3.6 · ใบขนสินค้า</h3><div class="subflow-sub">JobCustomsEntryController</div></div><span class="badge ok">ทุกฟิลด์ไม่บังคับ</span></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">GET</span> /jobs/{job}/customs/edit</span>
+          <span class="route"><span class="verb">PUT</span> /jobs/{job}/customs</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">เลขใบขน, วันยื่น/ตรวจปล่อย, สถานะใบขน, ภาษี/อากรต่างๆ</span><span class="fdesc">สถานะใบขนเป็นแค่ dropdown อ้างอิง ไม่มี workflow บังคับ</span></div></div>
+      </div>
+
+      <div class="card subflow" id="sf-docs">
+        <div class="subflow-head"><div><h3>3.7 · เอกสารแนบ</h3><div class="subflow-sub">JobDocumentController</div></div></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/documents</span>
+          <span class="route"><span class="verb">GET</span> …/documents/{d}/download</span>
+        </div>
+        <div class="field-list">
+          <div class="field-row"><span class="fname">ประเภทเอกสาร</span><span class="fdesc">บังคับ</span></div>
+          <div class="field-row"><span class="fname">ไฟล์ (อย่างน้อย 1, สูงสุด 20)</span><span class="fdesc">บังคับ — jpg/png/webp/pdf/docx/xlsx/txt ไม่เกิน 20MB/ไฟล์</span></div>
+        </div>
+      </div>
+
+      <div class="card subflow" id="sf-advance">
+        <div class="subflow-head"><div><h3>3.8 · เบิกเงิน</h3><div class="subflow-sub">AdvanceRequestController — เมนูแยก ไม่ใช่ปุ่มในหน้า Job</div></div></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /advance-requests</span>
+          <span class="route"><span class="verb">POST</span> …/{a}/approve · reject · pay</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">ประเภท, Job (บังคับถ้าเป็นจ่ายเอเยนต์), รายการ (วันที่/รายละเอียด/ยอด)</span><span class="fdesc">เข้าจากเมนู "เบิกเงิน (Advance)" แล้วเลือก Job เอง</span></div></div>
+        <div class="status-chain"><span class="st a">submitted</span><span class="arrow">→</span><span class="st">approve / reject</span><span class="arrow">→</span><span class="st">pay</span></div>
+      </div>
+
+      <div class="card subflow" id="sf-closing">
+        <div class="subflow-head"><div><h3>3.9 · ปิดต้นทุน</h3><div class="subflow-sub">JobCostClosingController</div></div></div>
+        <div class="grid-2" style="margin-top:12px">
+          <span class="route"><span class="verb">POST</span> /jobs/{job}/cost-closing</span>
+          <span class="route"><span class="verb">POST</span> …/cost-closing/{c}/approve</span>
+        </div>
+        <div class="field-list"><div class="field-row"><span class="fname">วันที่ปิดบัญชี, รายการ (อย่างน้อย 1 — ประเภทค่าใช้จ่าย + ยอด)</span><span class="fdesc">ปุ่ม "ปิดบัญชี Job →" จะโผล่เฉพาะหลังจากใบสั่งงาน Shipping ถูก released แล้วเท่านั้น</span></div></div>
+        <div class="status-chain"><span class="st a">submitted</span><span class="arrow">→</span><span class="st">posted <span style="opacity:.6">(กด approve)</span></span></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="field-list" id="list-subflows"></div>
+      </div>
+    </section>
+
+    <!-- ============ 4. GOTCHAS ============ -->
+    <section id="gotchas">
+      <div class="sec-head"><span class="sec-num">04</span><h2>ข้อควรระวังก่อนสรุปว่าพัง</h2></div>
+      <p class="sec-desc">พฤติกรรมเหล่านี้ตั้งใจให้เป็นแบบนี้ ไม่ใช่บั๊ก — เช็คตรงนี้ก่อนแจ้งว่าเจอปัญหา</p>
+
+      <div class="card">
+        <div class="field-list">
+          <div class="field-row"><span class="fname">Job ในประเทศไม่มีขั้นตอน</span><span class="fdesc">ทิศทาง "ในประเทศ" ไม่มีสายขั้นตอนเลยตามที่ตั้งใจ ไม่ใช่ข้อมูลหาย</span></div>
+          <div class="field-row"><span class="fname">Dropdown ว่างเปล่า</span><span class="fdesc">Supplier/ท่าเรือ/ประเภทรถ/เรือ ยังไม่มีหน้าให้กรอกเอง ต้องรอ import หรือ tinker ก่อน (ดูส่วนที่ 0)</span></div>
+          <div class="field-row"><span class="fname">เมนูฝั่งซ้ายที่กดแล้วไม่ไปไหน</span><span class="fdesc">Supplier, ท่าเรือ/เรือ/รถ/ตู้, บริการ/Incoterms, ใบเสนอราคา, ใบจอง, Invoice/Receipt, Audit Log — ยังไม่มีหน้าจริงในเวอร์ชันนี้</span></div>
+          <div class="field-row"><span class="fname">ปิดต้นทุนกดไม่ได้</span><span class="fdesc">ต้องมีใบสั่งงาน Shipping ที่ released แล้วก่อน ปุ่มถึงจะโผล่</span></div>
+          <div class="field-row"><span class="fname">ปุ่ม "ข้ามขั้นตอน" กดไม่ติด</span><span class="fdesc">ต้องพิมพ์หมายเหตุก่อนเสมอ ปุ่มถูกล็อกไว้จนกว่าจะมีข้อความ</span></div>
+          <div class="field-row"><span class="fname">ขั้นตอนสุดท้าย (ตรวจปล่อย) เสร็จเองไม่ต้องกด</span><span class="fdesc">ระบบเดินขั้นตอนให้อัตโนมัติทันทีที่กด "ตรวจปล่อย" ในใบสั่งงาน Shipping</span></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="field-list" id="list-gotchas"></div>
+      </div>
+    </section>
+
+    <footer>
+      <span>อ้างอิงจากโค้ดจริงใน hws-laravel (app/Http/Controllers, routes/web.php) — 2026-09-05</span>
+      <span>คลิกช่องติ๊กเพื่อบันทึกความคืบหน้าในเบราว์เซอร์นี้</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var checklist = [
+    {group:'list-prep', items:[
+      ['prep-1','สร้างลูกค้าอย่างน้อย 1 ราย'],
+      ['prep-2','สร้าง/ตรวจสอบ User ที่มี role shipping และ messenger'],
+      ['prep-3','ยืนยันกับผู้พัฒนาว่ารัน hws:import-legacy แล้ว (Supplier/ท่าเรือ/ประเภทรถ)'],
+    ]},
+    {group:'list-pipeline', items:[
+      ['pl-1','สร้าง Job ทิศทางนำเข้า แล้วเช็คว่าได้ 12 ขั้นตอนตามลำดับ'],
+      ['pl-2','สร้าง Job ทิศทางส่งออก แล้วเช็คว่าได้ 7 ขั้นตอนตามลำดับ'],
+      ['pl-3','สร้าง Job ในประเทศ แล้วยืนยันว่าไม่มีการ์ดขั้นตอนขึ้นเลย'],
+      ['pl-4','ทดสอบกด "ทำเครื่องหมายเสร็จ" 1 ครั้ง'],
+      ['pl-5','ทดสอบกด "ข้ามขั้นตอน" — ยืนยันว่ากดไม่ได้จนกว่าจะพิมพ์หมายเหตุ'],
+    ]},
+    {group:'list-subflows', items:[
+      ['sf-1','สั่งงาน Shipping ครบวงจร: สร้าง → รับทราบงาน → ตรวจปล่อย (แนบรูป) แล้วเช็คว่าขั้นตอนสุดท้ายของ Job เสร็จเองอัตโนมัติ'],
+      ['sf-2','สั่งงาน Messenger ครบวงจร: สร้าง → ปิดงานแบบสำเร็จ (แนบรูป)'],
+      ['sf-3','สั่งงาน Messenger ปิดงานแบบ "มีปัญหา" — ยืนยันว่าบังคับกรอกหมายเหตุ'],
+      ['sf-4','จองรถ: สร้าง → ปิดงาน'],
+      ['sf-5','สร้างใบส่งของ 1 ใบ'],
+      ['sf-6','แก้ไขข้อมูล Shipment/ตู้ แล้วเซฟซ้ำอีกครั้ง'],
+      ['sf-7','แก้ไขใบขนสินค้า'],
+      ['sf-8','แนบเอกสาร 1 ไฟล์ แล้วลองดาวน์โหลดกลับมาดู'],
+      ['sf-9','สร้างคำขอเบิกเงินผูกกับ Job นี้ แล้วอนุมัติ+จ่าย'],
+      ['sf-10','หลัง Shipping released แล้ว ลองปิดต้นทุน Job แล้วอนุมัติ'],
+    ]},
+    {group:'list-gotchas', items:[
+      ['g-1','อ่านรายการข้อควรระวังทั้งหมดแล้ว ก่อนสรุปว่าเจอบั๊กจริง'],
+    ]},
+  ];
+
+  var storeKey = 'hws-job-guide-progress';
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch(e) {}
+
+  var allBoxes = [];
+  checklist.forEach(function(group){
+    var el = document.getElementById(group.group);
+    if(!el) return;
+    group.items.forEach(function(item){
+      var key = item[0], label = item[1];
+      var row = document.createElement('div');
+      row.className = 'check-row' + (saved[key] ? ' done' : '');
+      var id = 'chk-' + key;
+      row.innerHTML = '<input type="checkbox" id="'+id+'"' + (saved[key] ? ' checked' : '') + '><label for="'+id+'"></label>';
+      row.querySelector('label').textContent = label;
+      el.appendChild(row);
+      var box = row.querySelector('input');
+      allBoxes.push(box);
+      box.addEventListener('change', function(){
+        saved[key] = box.checked;
+        row.classList.toggle('done', box.checked);
+        try { localStorage.setItem(storeKey, JSON.stringify(saved)); } catch(e) {}
+        updateProgress();
+      });
+    });
+  });
+
+  var ring = document.getElementById('ring-bar');
+  var circumference = 2 * Math.PI * 9;
+  function updateProgress(){
+    var total = allBoxes.length;
+    var done = allBoxes.filter(function(b){ return b.checked; }).length;
+    document.getElementById('progress-num').textContent = done;
+    document.getElementById('progress-total').textContent = total;
+    var frac = total ? done / total : 0;
+    ring.setAttribute('stroke-dasharray', circumference.toFixed(1));
+    ring.setAttribute('stroke-dashoffset', (circumference * (1 - frac)).toFixed(1));
+  }
+  updateProgress();
+})();
+</script>
