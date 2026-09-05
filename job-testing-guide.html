@@ -206,6 +206,26 @@ tr:first-child td{border-top:none}
 }
 .track.empty{display:flex; align-items:center; justify-content:center; text-align:center; color:var(--text-3); font-size:12.8px; padding:36px 20px}
 
+/* walkthrough timeline */
+.walk-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:6px 22px 8px; box-shadow:var(--shadow)}
+.walk-step{display:flex; gap:16px; padding:18px 0; position:relative}
+.walk-step:not(:last-child){border-bottom:1px dashed var(--border)}
+.walk-num{
+  width:30px; height:30px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; flex:none;
+  font-family:'JetBrains Mono';
+}
+.walk-body{flex:1; min-width:0; padding-top:3px}
+.walk-body h4{margin:0 0 6px; font-size:14.5px}
+.walk-body .do{font-size:13px; color:var(--text-2); margin:0; line-height:1.7}
+.walk-body .do b{color:var(--text); font-weight:600}
+.walk-result{
+  font-size:12.3px; color:var(--accent); background:var(--accent-soft); border-radius:8px;
+  padding:8px 11px; margin-top:9px; display:flex; gap:7px; align-items:flex-start;
+}
+.walk-result svg{flex:none; margin-top:1px; width:14px; height:14px}
+.walk-result.highlight{background:var(--warn-soft); color:var(--warn)}
+
 footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); color:var(--text-3); font-size:11.5px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px}
 </style>
 
@@ -230,6 +250,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
   <nav class="side">
     <div class="side-group">
       <h4>เริ่มต้น</h4>
+      <a href="#walkthrough"><span class="n">★</span> ตัวอย่าง Flow เต็มขั้นตอน</a>
       <a href="#prep"><span class="n">0</span> เตรียมข้อมูลหลัก</a>
       <a href="#create"><span class="n">1</span> สร้าง Job</a>
       <a href="#pipeline"><span class="n">2</span> สายงานขั้นตอน</a>
@@ -256,13 +277,145 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
     <div class="hero">
       <p class="eyebrow">Internal QA Playbook — เฉพาะโมดูล Job</p>
       <h1 class="title">ทดสอบ flow งานขนส่งตั้งแต่ศูนย์ ไปทีละก้าว</h1>
-      <p class="lede">ลำดับที่แนะนำให้ทดสอบ ตั้งแต่เตรียมข้อมูลหลัก ไปจนถึงปิดงาน อ้างอิงจากโค้ดจริงใน <code class="k">app/Http/Controllers</code> และ <code class="k">routes/web.php</code> ของ hws-laravel — ไม่ใช่การเดา ติ๊กช่องด้านขวาของแต่ละหัวข้อได้ ระบบจะจำไว้ให้ในเบราว์เซอร์นี้</p>
+      <p class="lede">ลำดับที่แนะนำให้ทดสอบ ตั้งแต่เตรียมข้อมูลหลัก ไปจนถึงปิดงาน อ้างอิงจากโค้ดจริงใน <code class="k">app/Http/Controllers</code> และ <code class="k">routes/web.php</code> ของ hws-laravel — ไม่ใช่การเดา ติ๊กช่องด้านขวาของแต่ละหัวข้อได้ ระบบจะจำไว้ให้ในเบราว์เซอร์นี้ อยากลองทำตามจริงเลยไปที่หัวข้อ <a href="#walkthrough">★ ตัวอย่าง Flow เต็มขั้นตอน</a> ได้เลย</p>
       <div class="hero-meta">
         <div class="item">เข้าระบบด้วย <b>superadmin / password</b></div>
         <div class="item">ทดสอบผ่านสิทธิ์ <b>super_admin (ข้ามทุกการเช็คสิทธิ์)</b></div>
         <div class="item">ครอบคลุม <b>9 งานย่อย + สายงานขั้นตอน</b></div>
       </div>
     </div>
+
+    <!-- ============ WALKTHROUGH ============ -->
+    <section id="walkthrough">
+      <div class="sec-head"><span class="sec-num">★</span><h2>ตัวอย่าง: ทดสอบ Job นำเข้า 1 ใบ แบบเต็มขั้นตอน</h2></div>
+      <p class="sec-desc">ทำตามนี้ทีละข้อได้เลย เป็นสถานการณ์จริง 1 เส้นทาง ที่พาไปครบทั้งสร้าง Job, เดินขั้นตอน, สั่งงาน Shipping จนถึงปิดต้นทุน — ส่วนที่เหลือของคู่มือ (ข้อ 0-4) เป็นรายละเอียดอ้างอิงเพิ่มเติมของแต่ละจุดที่เจอในตัวอย่างนี้</p>
+
+      <div class="walk-card">
+        <div class="walk-step">
+          <div class="walk-num">1</div>
+          <div class="walk-body">
+            <h4>เปิด Job ใหม่</h4>
+            <p class="do">ไปที่ <span class="route">/jobs/create</span> → เลือก <b>ลูกค้า</b> ที่มีอยู่แล้ว (เช่น 91TRADE) · <b>ทิศทางงาน</b> = "นำเข้า" · <b>รูปแบบขนส่ง</b> = "ทางเรือ" · <b>ประเภทตู้/สินค้า</b> = "FCL" → กด "เปิด Job ใหม่"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ระบบพาไปหน้า Job ใหม่ (เช่น <code class="k">HWS0002</code>) เห็นการ์ด "แผนงานและความคืบหน้า" <b>0/12</b> ขั้นตอนแรก "01 · รับ B/L" ขึ้นสถานะ <b>กำลังทำ</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">2</div>
+          <div class="walk-body">
+            <h4>กรอกรายละเอียดเรือ/ตู้ <span class="badge opt" style="margin-left:4px">ไม่บังคับแต่แนะนำให้ลอง</span></h4>
+            <p class="do">กดปุ่ม <b>"Shipment / ตู้"</b> บนหัวหน้า Job → กรอก MBL No., สายเรือ, POL/POD → กด "บันทึก"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>กลับมาหน้า Job แล้วเห็นการ์ด "Shipment" ทางขวาโชว์ข้อมูลที่เพิ่งกรอกไป</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">3</div>
+          <div class="walk-body">
+            <h4>ทำเครื่องหมายขั้นตอนแรกว่าเสร็จ</h4>
+            <p class="do">ที่การ์ดขั้นตอน กดปุ่ม <b>"ทำเครื่องหมายเสร็จ →"</b> ของขั้นตอน "01 รับ B/L" (ไม่ต้องพิมพ์หมายเหตุก็กดได้)</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ความคืบหน้าขยับเป็น <b>1/12</b> ขั้นตอน "02 · ENTER" กลายเป็น <b>กำลังทำ</b> เองอัตโนมัติ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">4</div>
+          <div class="walk-body">
+            <h4>ลองข้ามขั้นตอน (ต้องมีหมายเหตุ)</h4>
+            <p class="do">พิมพ์หมายเหตุ เช่น <i>"ลูกค้าแจ้งว่าจะยื่นเองผ่านตัวแทนอีกราย"</i> ในช่องหมายเหตุ แล้วกด <b>"ข้ามขั้นตอนนี้"</b></p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ขั้นตอน "02 ENTER" ถูกทำเครื่องหมาย <b>ข้ามขั้นตอน</b> พร้อมโชว์หมายเหตุที่พิมพ์ไว้ ไปที่ "03 ทำใบขน" ความคืบหน้า <b>2/12</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">5</div>
+          <div class="walk-body">
+            <h4>ทำเครื่องหมายขั้นตอน 03 ว่าเสร็จ</h4>
+            <p class="do">กด <b>"ทำเครื่องหมายเสร็จ →"</b> อีกครั้งที่ขั้นตอน "03 ทำใบขน"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ไปที่ "04 ส่งใบขนตรวจสอบ" ความคืบหน้า <b>3/12</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">6</div>
+          <div class="walk-body">
+            <h4>สั่งงาน Shipping จริง</h4>
+            <p class="do">กดปุ่ม <b>"สั่งงาน Shipping"</b> บนหัวหน้า Job → กรอก <b>ท่าปล่อยสินค้า</b> = "ท่าเรือกรุงเทพ" · <b>Shipping ผู้รับงาน</b> = เลือกพนักงานที่มี Role shipping → กด "บันทึกและสั่งงาน"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>กลับมาหน้า Job เห็นการ์ด "การสั่งงาน Shipping (1)" สถานะ <b>assigned</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">7</div>
+          <div class="walk-body">
+            <h4>รับทราบงาน</h4>
+            <p class="do">กดเข้าไปที่ใบสั่งงานนั้น แล้วกด <b>"รับทราบงาน →"</b></p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>สถานะใบสั่งงานเปลี่ยนเป็น <b>acknowledged</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">8</div>
+          <div class="walk-body">
+            <h4>ตรวจปล่อย (บังคับแนบรูป)</h4>
+            <p class="do">กด <b>"ตรวจปล่อย →"</b> → หน้าฟอร์มเต็มหน้าขึ้นมา แนบรูปอะไรก็ได้อย่างน้อย 1 รูป → กด "บันทึกและปิดงาน"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>สถานะใบสั่งงานเปลี่ยนเป็น <b>released</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">9</div>
+          <div class="walk-body">
+            <h4>สังเกตขั้นตอนสุดท้ายที่เสร็จเอง <span class="badge warn" style="margin-left:4px">จุดที่ควรจับตา</span></h4>
+            <p class="do">กลับไปที่หน้า Job แล้วดูการ์ดขั้นตอนอีกครั้ง — ไม่ต้องกดอะไรเพิ่ม</p>
+            <div class="walk-result highlight">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+              <span>"12 · ตรวจปล่อย" ถูกทำเครื่องหมาย <b>เสร็จให้เองอัตโนมัติ</b> ทันทีที่ตรวจปล่อยใบสั่งงาน Shipping — นี่คือจุดเชื่อมกันของระบบที่อยากให้ทดสอบยืนยันโดยเฉพาะ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">10</div>
+          <div class="walk-body">
+            <h4>ปิดต้นทุน Job</h4>
+            <p class="do">ปุ่ม <b>"ปิดบัญชี Job →"</b> จะโผล่ขึ้นมาแล้ว (เพราะมีใบสั่งงาน Shipping ที่ released) → กด → กรอกวันที่ปิดบัญชี + เพิ่มรายการค่าใช้จ่ายอย่างน้อย 1 แถว → กด "บันทึก"</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ใบปิดบัญชีถูกสร้างในสถานะ <b>submitted</b> — กด "อนุมัติ" ต่อได้ถ้าอยากเห็นสถานะ <b>posted</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="field-list" id="list-walkthrough"></div>
+      </div>
+    </section>
 
     <!-- ============ 0. PREP ============ -->
     <section id="prep">
@@ -520,6 +673,9 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
 <script>
 (function(){
   var checklist = [
+    {group:'list-walkthrough', items:[
+      ['walk-1','ทำตามตัวอย่าง Job นำเข้า 1 ใบ ครบทั้ง 10 ขั้นตอนแล้ว'],
+    ]},
     {group:'list-prep', items:[
       ['prep-1','สร้างลูกค้าอย่างน้อย 1 ราย'],
       ['prep-2','สร้าง/ตรวจสอบ User ที่มี role shipping และ messenger'],
