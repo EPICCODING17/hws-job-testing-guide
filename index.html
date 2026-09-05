@@ -288,14 +288,38 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
     <!-- ============ WALKTHROUGH ============ -->
     <section id="walkthrough">
       <div class="sec-head"><span class="sec-num">★</span><h2>ตัวอย่าง: ทดสอบ Job นำเข้า 1 ใบ แบบเต็มขั้นตอน</h2></div>
-      <p class="sec-desc">ทำตามนี้ทีละข้อได้เลย เป็นสถานการณ์จริง 1 เส้นทาง ที่พาไปครบทั้งสร้าง Job, เดินขั้นตอน, สั่งงาน Shipping จนถึงปิดต้นทุน — ส่วนที่เหลือของคู่มือ (ข้อ 0-4) เป็นรายละเอียดอ้างอิงเพิ่มเติมของแต่ละจุดที่เจอในตัวอย่างนี้</p>
+      <p class="sec-desc">เริ่มจากศูนย์จริงๆ — สร้างข้อมูลเองทุกอย่าง ไม่หยิบรายการเดิมในระบบมาใช้เลย ทำตามนี้ทีละข้อได้เลย ส่วนที่เหลือของคู่มือ (ข้อ 0-4) เป็นรายละเอียดอ้างอิงเพิ่มเติมของแต่ละจุดที่เจอในตัวอย่างนี้</p>
 
       <div class="walk-card">
         <div class="walk-step">
           <div class="walk-num">1</div>
           <div class="walk-body">
+            <h4>สร้างพนักงานทดสอบสำหรับ Shipping</h4>
+            <p class="do">ไปที่ <span class="route">/users/create</span> → กรอกชื่อ-นามสกุล/ชื่อเล่นอะไรก็ได้ เช่น <i>"ทดสอบ ชิปปิ้ง"</i> ชื่อเล่น <i>"ทดสอบ1"</i> → ติ๊ก Role <b>shipping</b> → กดบันทึก</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ได้ User ใหม่ พร้อมรหัสผ่านชั่วคราว <code class="k">Hws@2026</code> — ใช้เลือกเป็น "Shipping ผู้รับงาน" ได้ในข้อ 8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">2</div>
+          <div class="walk-body">
+            <h4>สร้างลูกค้าทดสอบใหม่</h4>
+            <p class="do">ไปที่ <span class="route">/customers/create</span> → กรอกชื่อย่อ เช่น <i>"ทดสอบ ABC"</i> ชื่อเต็ม TH/EN ตามใจ → กดบันทึก</p>
+            <div class="walk-result">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>ได้รหัสลูกค้าใหม่อัตโนมัติ (เช่น <code class="k">HWS10063</code>) — เป็นลูกค้าที่เพิ่งสร้าง ใช้เลือกในข้อถัดไป ไม่ใช่รายการเดิมในระบบ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="walk-step">
+          <div class="walk-num">3</div>
+          <div class="walk-body">
             <h4>เปิด Job ใหม่</h4>
-            <p class="do">ไปที่ <span class="route">/jobs/create</span> → เลือก <b>ลูกค้า</b> ที่มีอยู่แล้ว (เช่น 91TRADE) · <b>ทิศทางงาน</b> = "นำเข้า" · <b>รูปแบบขนส่ง</b> = "ทางเรือ" · <b>ประเภทตู้/สินค้า</b> = "FCL" → กด "เปิด Job ใหม่"</p>
+            <p class="do">ไปที่ <span class="route">/jobs/create</span> → เลือก <b>ลูกค้า</b> = ลูกค้าที่เพิ่งสร้างในข้อ 2 · <b>ทิศทางงาน</b> = "นำเข้า" · <b>รูปแบบขนส่ง</b> = "ทางเรือ" · <b>ประเภทตู้/สินค้า</b> = "FCL" → กด "เปิด Job ใหม่"</p>
             <div class="walk-result">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
               <span>ระบบพาไปหน้า Job ใหม่ (เช่น <code class="k">HWS0002</code>) เห็นการ์ด "แผนงานและความคืบหน้า" <b>0/12</b> ขั้นตอนแรก "01 · รับ B/L" ขึ้นสถานะ <b>กำลังทำ</b></span>
@@ -304,7 +328,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">2</div>
+          <div class="walk-num">4</div>
           <div class="walk-body">
             <h4>กรอกรายละเอียดเรือ/ตู้ <span class="badge opt" style="margin-left:4px">ไม่บังคับแต่แนะนำให้ลอง</span></h4>
             <p class="do">กดปุ่ม <b>"Shipment / ตู้"</b> บนหัวหน้า Job → กรอก MBL No., สายเรือ, POL/POD → กด "บันทึก"</p>
@@ -316,7 +340,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">3</div>
+          <div class="walk-num">5</div>
           <div class="walk-body">
             <h4>ทำเครื่องหมายขั้นตอนแรกว่าเสร็จ</h4>
             <p class="do">ที่การ์ดขั้นตอน กดปุ่ม <b>"ทำเครื่องหมายเสร็จ →"</b> ของขั้นตอน "01 รับ B/L" (ไม่ต้องพิมพ์หมายเหตุก็กดได้)</p>
@@ -328,7 +352,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">4</div>
+          <div class="walk-num">6</div>
           <div class="walk-body">
             <h4>ลองข้ามขั้นตอน (ต้องมีหมายเหตุ)</h4>
             <p class="do">พิมพ์หมายเหตุ เช่น <i>"ลูกค้าแจ้งว่าจะยื่นเองผ่านตัวแทนอีกราย"</i> ในช่องหมายเหตุ แล้วกด <b>"ข้ามขั้นตอนนี้"</b></p>
@@ -340,7 +364,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">5</div>
+          <div class="walk-num">7</div>
           <div class="walk-body">
             <h4>ทำเครื่องหมายขั้นตอน 03 ว่าเสร็จ</h4>
             <p class="do">กด <b>"ทำเครื่องหมายเสร็จ →"</b> อีกครั้งที่ขั้นตอน "03 ทำใบขน"</p>
@@ -352,10 +376,10 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">6</div>
+          <div class="walk-num">8</div>
           <div class="walk-body">
             <h4>สั่งงาน Shipping จริง</h4>
-            <p class="do">กดปุ่ม <b>"สั่งงาน Shipping"</b> บนหัวหน้า Job → กรอก <b>ท่าปล่อยสินค้า</b> = "ท่าเรือกรุงเทพ" · <b>Shipping ผู้รับงาน</b> = เลือกพนักงานที่มี Role shipping → กด "บันทึกและสั่งงาน"</p>
+            <p class="do">กดปุ่ม <b>"สั่งงาน Shipping"</b> บนหัวหน้า Job → กรอก <b>ท่าปล่อยสินค้า</b> = "ท่าเรือกรุงเทพ" · <b>Shipping ผู้รับงาน</b> = พนักงานที่สร้างในข้อ 1 → กด "บันทึกและสั่งงาน"</p>
             <div class="walk-result">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
               <span>กลับมาหน้า Job เห็นการ์ด "การสั่งงาน Shipping (1)" สถานะ <b>assigned</b></span>
@@ -364,7 +388,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">7</div>
+          <div class="walk-num">9</div>
           <div class="walk-body">
             <h4>รับทราบงาน</h4>
             <p class="do">กดเข้าไปที่ใบสั่งงานนั้น แล้วกด <b>"รับทราบงาน →"</b></p>
@@ -376,7 +400,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">8</div>
+          <div class="walk-num">10</div>
           <div class="walk-body">
             <h4>ตรวจปล่อย (บังคับแนบรูป)</h4>
             <p class="do">กด <b>"ตรวจปล่อย →"</b> → หน้าฟอร์มเต็มหน้าขึ้นมา แนบรูปอะไรก็ได้อย่างน้อย 1 รูป → กด "บันทึกและปิดงาน"</p>
@@ -388,7 +412,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">9</div>
+          <div class="walk-num">11</div>
           <div class="walk-body">
             <h4>สังเกตขั้นตอนสุดท้ายที่เสร็จเอง <span class="badge warn" style="margin-left:4px">จุดที่ควรจับตา</span></h4>
             <p class="do">กลับไปที่หน้า Job แล้วดูการ์ดขั้นตอนอีกครั้ง — ไม่ต้องกดอะไรเพิ่ม</p>
@@ -400,7 +424,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
         </div>
 
         <div class="walk-step">
-          <div class="walk-num">10</div>
+          <div class="walk-num">12</div>
           <div class="walk-body">
             <h4>ปิดต้นทุน Job</h4>
             <p class="do">ปุ่ม <b>"ปิดบัญชี Job →"</b> จะโผล่ขึ้นมาแล้ว (เพราะมีใบสั่งงาน Shipping ที่ released) → กด → กรอกวันที่ปิดบัญชี + เพิ่มรายการค่าใช้จ่ายอย่างน้อย 1 แถว → กด "บันทึก"</p>
@@ -674,7 +698,7 @@ footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--border); co
 (function(){
   var checklist = [
     {group:'list-walkthrough', items:[
-      ['walk-1','ทำตามตัวอย่าง Job นำเข้า 1 ใบ ครบทั้ง 10 ขั้นตอนแล้ว'],
+      ['walk-1','ทำตามตัวอย่าง Job นำเข้า 1 ใบ ครบทั้ง 12 ขั้นตอนแล้ว (สร้างข้อมูลเองตั้งแต่ต้น)'],
     ]},
     {group:'list-prep', items:[
       ['prep-1','สร้างลูกค้าอย่างน้อย 1 ราย'],
